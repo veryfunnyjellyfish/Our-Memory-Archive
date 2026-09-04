@@ -1,0 +1,74 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Our Memory Archive</title>
+<style>
+    :root{--bg:#f7e7dc;--card:#fcf6eb;--txt:#d18958;--sub:#96592f;--heart:#b54545;--btn:#e0ab51;--in:#3d2510;--link:#d49b74;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;}
+    body{background:var(--bg);color:var(--txt);min-height:100vh;padding:25px;text-align:center;}
+    header{display:flex;justify-content:space-between;margin-bottom:40px;align-items:center;}
+    .nav-btn{background:var(--btn);padding:6px 16px;border-radius:30px;text-decoration:none;color:white;font-weight:600;font-size:0.85rem;cursor:pointer;border:none;}
+    .hero h1{font-size:3rem;margin-bottom:8px;} .hero p{color:var(--sub);font-size:1.1rem;margin-bottom:40px;}
+    .page-view{display:none;opacity:0;transition:opacity 0.4s ease-in-out;} .page-view.active{display:block;} .page-view.fade-in{opacity:1;}
+    .grid{display:grid;grid-template-columns:repeat(5,170px);gap:40px;justify-content:center;position:relative;padding-bottom:140px;}
+    .line{position:absolute;width:100%;height:2px;background:rgba(209,137,88,0.2);left:0;z-index:-1;}
+    .card{background:var(--card);width:170px;height:220px;border-radius:6px;box-shadow:0 8px 16px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:center;cursor:pointer;transform:rotate(var(--r,0deg));transition:0.2s;position:relative;} .card:hover{transform:translateY(-8px) scale(1.03);}
+    .share-btn{position:fixed;bottom:30px;left:30px;background:var(--btn);color:white;padding:10px 22px;border-radius:30px;border:1.5px dashed white;font-weight:700;cursor:pointer;z-index:90;}
+    .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;}
+    .modal{background:var(--card);padding:30px;border-radius:12px;width:90%;max-width:400px;position:relative;color:var(--in);} .close{position:absolute;top:15px;right:20px;cursor:pointer;font-weight:bold;}
+    textarea{width:100%;height:100px;margin:15px 0;padding:10px;border:1px dashed #ccc;border-radius:6px;resize:none;}
+    .sub-btn{background:var(--btn);color:white;border:none;padding:10px;width:100%;border-radius:20px;font-weight:700;cursor:pointer;}
+    .team-container{background:var(--card);max-width:500px;margin:40px auto;padding:40px;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.05);color:var(--in);}
+    .p-img{width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--btn);margin:0 auto 20px;display:block;background:#e2d2c7;}
+    .del-btn{display:none;position:absolute;top:10px;right:10px;background:var(--heart);color:white;border:none;border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:bold;z-index:20;cursor:pointer;} body.admin-mode .del-btn{display:block;}
+</style>
+</head>
+<body>
+    <header>
+        <div style="font-weight:800;font-size:1.5rem;cursor:pointer;" onclick="showA()">OMA</div>
+        <nav><button class="nav-btn" onclick="showT()">Our team</button><button class="nav-btn" id="wBtn" onclick="openW()">Write</button></nav>
+    </header>
+
+    <div id="archP" class="page-view active fade-in">
+        <div class="hero"><h1>Our Memory Archive</h1><p>helping you rediscover the little things in life.</p></div>
+        <div style="position:relative;max-width:1000px;margin:0 auto;"><div class="line" style="top:110px"></div><div class="line" style="top:370px"></div><div class="line" style="top:630px"></div><div class="grid" id="grid"></div></div>
+        <button class="share-btn" onclick="openW()">✨ Share your favourite memory</button>
+    </div>
+
+    <div id="teamP" class="page-view">
+        <div class="team-container">
+            <img class="p-img" src="your-photo.jpg" alt="Your Name">
+            <h2 style="color:var(--link);margin-bottom:4px;">Your Name</h2>
+            <div style="color:var(--btn);font-weight:600;font-size:0.9rem;text-transform:uppercase;margin-bottom:20px;">Founder / Creator</div>
+            <p style="line-height:1.6;margin-bottom:25px;">Welcome to Our Memory Archive! I created this cozy space to bring the global community together and help everyone rediscover joy in the small things in life.</p>
+            <button class="nav-btn" onclick="showA()">← Back to Archive</button>
+        </div>
+    </div>
+    
+    <div class="overlay" id="readO" onclick="closeM()"><div class="modal" onclick="event.stopPropagation()"><span class="close" onclick="closeM()">✕</span><div style="color:var(--heart);font-size:1.5rem">♥</div><p id="readT" style="margin-top:10px;line-height:1.5;"></p></div></div>
+    <div class="overlay" id="writeO" onclick="closeM()"><div class="modal" onclick="event.stopPropagation()"><span class="close" onclick="closeM()">✕</span><form onsubmit="subM(event)"><h2>Add to Archive</h2><textarea id="mInput" required></textarea><button type="submit" class="sub-btn">Seal & Send ✉️</button></form></div></div>
+
+    <script>
+        let saves = JSON.parse(localStorage.getItem('oma_saves')) || ["Rain sliding down the windowpane while warm under my blanket.","Heard my childhood favorite song randomly playing today.","Finally managed to keep my houseplant alive for a new leaf.","An old friend messaged out of nowhere to say hello.","The absolute silence in the woods after the first snowfall.","Successfully baking a loaf of sourdough perfectly from scratch.","Sitting by the harbor watching the sun melt into the horizon.","Finding a tiny smooth seashell tucked away in an old coat pocket.","The warm crunch of toasted bread on a cold morning.","Laughing so hard your stomach hurts with close friends.","Finding a crisp twenty dollar bill inside an old book.","The delicious aroma of chocolate chip cookies baking.","A cozy afternoon napping while a thunderstorms rages outside.","Getting all green lights on the drive home after a long work day.","A puppy walking up to lick your hand over the fence.","Finishing a fantastic book and just staring at the cover.","The soft crinkly crunch of walking over dry autumn leaves.","An unexpected warm smile from the grocery store cashier.","Seeing a bright beautiful rainbow arching right over your neighborhood.","Waking up and realizing you still have three hours left to sleep."];
+        const grid = document.getElementById('grid'); const limit = 20; let displayed = 0;
+        const badWords = ["hate", "ugly", "stupid", "badword1", "badword2"]; // Add text patterns to block here
+        if (new URLSearchParams(window.location.search).get('admin') === 'true') { document.body.classList.add('admin-mode'); }
+        function makeCard(txt, idx) {
+            const el = document.createElement('div'); el.className = 'card'; el.style.setProperty('--r', (Math.random() * 6 - 3).toFixed(1) + 'deg');
+            el.innerHTML = `<button class="del-btn" onclick="delM(${idx}, event)">✕ Delete</button><div style="color:var(--heart);font-size:1.5rem">&hearts;</div>`;
+            el.onclick = () => { document.getElementById('readT').innerText = txt; document.getElementById('readO').style.display = 'flex'; }; grid.appendChild(el);
+        }
+        function delM(idx, e) { e.stopPropagation(); if (confirm("Permanently erase this letter?")) { saves.splice(idx, 1); localStorage.setItem('oma_saves', JSON.stringify(saves)); draw(); } }
+        function draw() { grid.innerHTML = ''; displayed = Math.min(limit, saves.length); for (let i = saves.length - 1; i >= saves.length - displayed; i--) { if(saves[i]) makeCard(saves[i], i); } }
+        function loadMore() { if (displayed >= saves.length) return; let next = Math.min(displayed + limit, saves.length); for (let i = saves.length - 1 - displayed; i >= saves.length - next; i--) { if(saves[i]) makeCard(saves[i], i); } displayed = next; }
+        window.onscroll = () => { if (document.getElementById('archP').classList.contains('active') && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) { loadMore(); } };
+        function switchP(hId, sId) { const h = document.getElementById(hId); const s = document.getElementById(sId); h.classList.remove('fade-in'); setTimeout(() => { h.classList.remove('active'); s.className += ' active'; setTimeout(() => { s.className += ' fade-in'; }, 50); }, 400); }
+        function showT() { if(!document.getElementById('teamP').classList.contains('active')) { switchP('archP', 'teamP'); document.getElementById('wBtn').style.display = 'none'; window.scrollTo({top: 0}); } }
+        function showA() { if(!document.getElementById('archP').classList.contains('active')) { switchP('teamP', 'archP'); document.getElementById('wBtn').style.display = 'inline-block'; } }
+        function openW() { document.getElementById('writeO').style.display = 'flex'; }
+        function closeM() { document.getElementById('readO').style.display = 'none'; document.getElementById('writeO').style.display = 'none'; }
+        function subM(e) {
+            e.preventDefault(); const input = document.getElementById('mInput'); const val = input.value.trim(); const clean = val.toLowerCase();
+            if (badWords.some(word => clean.includes(word))) { alert("Let's keep this space warm and uplifting! Please remove negative terms. 🤍"); return; }
+            if(val) { saves.push(val); localStorage.setItem('oma_saves', JSON.stringify(saves)); input.value = ''; closeM(); draw(); }
+        }
+        draw();
+    </script>
+</body></html>
